@@ -34,7 +34,7 @@
 
   <div class="card" id="login">
     <h2>MASTER PASSWORD</h2>
-    <input id="master" type="password" autocomplete="current-password" placeholder="Master password">
+    <input id="master" type="password" name="orx-m" autocomplete="new-password" placeholder="Master password">
     <div class="row"><button class="go" id="loginBtn">SIGN IN</button></div>
     <div class="msg" id="loginMsg"></div>
     <p class="dim">The master password lives on the server as a Worker secret and is never stored in this page. It can create and remove the other passwords.</p>
@@ -43,9 +43,9 @@
   <div id="panel" class="hide">
     <div class="card">
       <h2>ADD A PASSWORD</h2>
-      <label>Who is it for (just a label)</label><input id="newLabel" maxlength="40" placeholder="e.g. Jayden, beta tester">
-      <label>Password (4 to 64 characters)</label><input id="newPw" type="text" autocomplete="off" maxlength="64" placeholder="New admin password">
-      <label>Expires after (hours, leave empty for never)</label><input id="newHours" type="number" min="0" max="8760" placeholder="e.g. 24">
+      <label>Who is it for (just a label)</label><input id="newLabel" name="orx-l" autocomplete="off" data-lpignore="true" maxlength="40" placeholder="e.g. Jayden, beta tester">
+      <label>Password (4 to 64 characters)</label><input id="newPw" name="orx-p" type="text" autocomplete="off" data-lpignore="true" maxlength="64" placeholder="New admin password">
+      <label>Expires after (hours, leave empty for never)</label><input id="newHours" name="orx-h" autocomplete="off" type="number" min="0" max="8760" placeholder="e.g. 24">
       <div class="row"><button class="go" id="addBtn">ADD PASSWORD</button><button id="genBtn">GENERATE ONE</button></div>
       <div class="msg" id="addMsg"></div>
     </div>
@@ -65,7 +65,8 @@
   </div>
 </div>
 <script>
-const SERVER = 'https://open-road-saves.spoonslug.workers.dev';
+let SERVER = ''; try { SERVER = localStorage.getItem('or_srv') || ''; } catch (e) { }
+if (!SERVER) { SERVER = (prompt('Paste your Worker URL (shown once, then remembered on this device):') || '').trim().replace(/\/+$/, ''); try { localStorage.setItem('or_srv', SERVER); } catch (e) { } }
 const $ = id => document.getElementById(id);
 let master = '';
 async function api(path, body) {
