@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Open Road - Admin Passwords</title>
+<style>
+  :root { --bg: #0d1118; --card: #151b26; --line: #2a3447; --txt: #e8ecf4; --dim: #8a94a8; --acc: #2a5bd7; --good: #8ff0a4; --bad: #ff8d7a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 50% -20%, #1b2744 0%, var(--bg) 60%); color: var(--txt); font-family: system-ui, -apple-system, Segoe UI, sans-serif; display: flex; justify-content: center; padding: 28px 14px; }
+  .wrap { width: min(760px, 100%); }
+  h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: 3px; } .sub { color: var(--dim); font-size: 13px; margin-bottom: 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; }
+  h2 { margin: 0 0 12px; font-size: 12px; letter-spacing: 3px; color: #8fb4ff; font-weight: 700; }
+  input { width: 100%; padding: 11px 12px; margin: 5px 0; background: #0a0d13; border: 1px solid var(--line); border-radius: 9px; color: #fff; font-size: 15px; }
+  input:focus { outline: none; border-color: var(--acc); }
+  label { font-size: 12px; color: var(--dim); display: block; margin-top: 8px; }
+  button { padding: 10px 16px; border-radius: 9px; border: 1px solid var(--line); background: #1d2636; color: var(--txt); cursor: pointer; font-weight: 600; font-size: 14px; }
+  button:hover { background: #28344c; } button.go { background: var(--acc); border-color: var(--acc); } button.go:hover { background: #3a6ae6; } button.del { color: var(--bad); } button:disabled { opacity: .5; cursor: default; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+  .msg { min-height: 20px; margin-top: 10px; font-size: 14px; color: var(--bad); } .msg.ok { color: var(--good); }
+  .item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); } .item:first-child { border-top: none; }
+  .item .main { flex: 1; min-width: 0; } .item b { display: block; font-size: 15px; } .item small { color: var(--dim); font-size: 12px; line-height: 1.5; display: block; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; background: #22314f; color: #a9c2ff; margin-left: 6px; } .pill.exp { background: #4a2a22; color: #ffb4a4; }
+  .play { color: #8fb4ff; text-decoration: none; font-weight: 700; font-size: 13px; letter-spacing: 1px; } .hide { display: none; } .dim { color: var(--dim); font-size: 13px; line-height: 1.6; }
+  code { background: #0a0d13; padding: 2px 6px; border-radius: 5px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>OPEN ROAD ADMIN</h1>
+  <div class="sub">Manage the passwords that unlock the in-game admin panel. <a class="play" href="./">OPEN THE GAME &rarr;</a></div>
+
+  <div class="card" id="login">
+    <h2>MASTER PASSWORD</h2>
+    <input id="master" type="password" autocomplete="current-password" placeholder="Master password">
+    <div class="row"><button class="go" id="loginBtn">SIGN IN</button></div>
+    <div class="msg" id="loginMsg"></div>
+    <p class="dim">The master password lives on the server as a Worker secret and is never stored in this page. It can create and remove the other passwords.</p>
+  </div>
+
+  <div id="panel" class="hide">
+    <div class="card">
+      <h2>ADD A PASSWORD</h2>
+      <label>Who is it for (just a label)</label><input id="newLabel" maxlength="40" placeholder="e.g. Jayden, beta tester">
+      <label>Password (4 to 64 characters)</label><input id="newPw" type="text" autocomplete="off" maxlength="64" placeholder="New admin password">
+      <label>Expires after (hours, leave empty for never)</label><input id="newHours" type="number" min="0" max="8760" placeholder="e.g. 24">
+      <div class="row"><button class="go" id="addBtn">ADD PASSWORD</button><button id="genBtn">GENERATE ONE</button></div>
+      <div class="msg" id="addMsg"></div>
+    </div>
+
+    <div class="card">
+      <h2>ACTIVE PASSWORDS</h2>
+      <div id="list"><p class="dim">Loading...</p></div>
+      <div class="row"><button id="refreshBtn">REFRESH</button><button id="outBtn">SIGN OUT</button></div>
+      <div class="msg" id="listMsg"></div>
+      <p class="dim">A removed password stops working right away, even for someone who is already in the game, the next time they open the admin panel. Passwords are stored hashed, so they cannot be shown again after you add them: write them down.</p>
+    </div>
+
+    <div class="card">
+      <h2>CHANGE THE MASTER PASSWORD</h2>
+      <p class="dim">The master password is a secret on the Cloudflare Worker, so it is changed there: in the Cloudflare dashboard open the Worker, Settings, Variables and Secrets, and edit <code>ADMIN_MASTER</code>. Or from a terminal run <code>npx wrangler secret put ADMIN_MASTER</code>. After that the old master password stops working immediately.</p>
+    </div>
+  </div>
+</div>
+<script>
+const SERVER = 'https://open-road-saves.spoonslug.workers.dev';
+const $ = id => document.getElementById(id);
+let master = '';
+async function api(path, body) {
+  let r, j = null;
+  try { r = await fetch(SERVER + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); j = await r.json(); } catch (e) { return { error: 'Could not reach the server. Check your internet connection.' }; }
+  if (r.status === 429) return { error: 'Too many attempts. Try again in a while.' };
+  return j || { error: 'Unexpected reply from the server.' };
+}
+const say = (id, t, ok) => { const e = $(id); e.textContent = t || ''; e.className = 'msg' + (ok ? ' ok' : ''); };
+const ago = t => { if (!t) return 'never'; const s = (Date.now() - t) / 1000; return s < 90 ? 'just now' : s < 5400 ? Math.round(s / 60) + ' min ago' : s < 129600 ? Math.round(s / 3600) + ' h ago' : Math.round(s / 86400) + ' days ago'; };
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+async function signIn() {
+  const pw = $('master').value; if (!pw) return; $('loginBtn').disabled = true; say('loginMsg', 'Checking...');
+  const j = await api('/admin/list', { master: pw }); $('loginBtn').disabled = false;
+  if (!j.ok) { say('loginMsg', j.error === 'wrong master password' ? 'Wrong master password.' : (j.error || 'Could not sign in.')); return; }
+  master = pw; $('master').value = ''; $('login').classList.add('hide'); $('panel').classList.remove('hide'); say('loginMsg', ''); draw(j.list);
+}
+function draw(list) {
+  const el = $('list');
+  if (!list.length) { el.innerHTML = '<p class="dim">No extra passwords yet. Only the master password works in the game right now.</p>'; return; }
+  el.innerHTML = list.map(o => {
+    const expd = o.exp && o.exp < Date.now(), exp = o.exp ? (expd ? '<span class="pill exp">EXPIRED</span>' : '<span class="pill">expires ' + new Date(o.exp).toLocaleString() + '</span>') : '';
+    return '<div class="item"><div class="main"><b>' + esc(o.label) + exp + '</b><small>Added ' + new Date(o.created).toLocaleString() + '  -  used ' + o.n + ' time' + (o.n === 1 ? '' : 's') + ', last ' + ago(o.used) + '</small></div><button class="del" data-id="' + esc(o.id) + '">REMOVE</button></div>';
+  }).join('');
+  el.querySelectorAll('button.del').forEach(b => b.onclick = () => remove(b.dataset.id));
+}
+async function refresh() { const j = await api('/admin/list', { master }); if (!j.ok) { say('listMsg', j.error || 'Could not load.'); return; } say('listMsg', ''); draw(j.list); }
+async function add() {
+  const pw = $('newPw').value, label = $('newLabel').value.trim(), hours = $('newHours').value;
+  if (pw.length < 4) { say('addMsg', 'Passwords need at least 4 characters.'); return; }
+  $('addBtn').disabled = true; say('addMsg', 'Adding...'); const j = await api('/admin/add', { master, pw, label, hours: hours ? +hours : 0 }); $('addBtn').disabled = false;
+  if (!j.ok) { say('addMsg', j.error || 'Could not add it.'); return; }
+  say('addMsg', 'Added. It works in the game right now.', true); $('newPw').value = ''; $('newLabel').value = ''; $('newHours').value = ''; refresh();
+}
+async function remove(id) { if (!confirm('Remove this password?')) return; const j = await api('/admin/remove', { master, id }); if (!j.ok) { say('listMsg', j.error || 'Could not remove it.'); return; } say('listMsg', 'Removed.', true); refresh(); }
+function gen() { const a = 'abcdefghjkmnpqrstuvwxyz23456789', b = crypto.getRandomValues(new Uint8Array(12)); $('newPw').value = Array.from(b, v => a[v % a.length]).join(''); }
+$('loginBtn').onclick = signIn; $('master').onkeydown = e => { if (e.key === 'Enter') signIn(); };
+$('addBtn').onclick = add; $('genBtn').onclick = gen; $('refreshBtn').onclick = refresh; $('outBtn').onclick = () => { master = ''; $('panel').classList.add('hide'); $('login').classList.remove('hide'); };
+</script>
+</body>
+</html>
