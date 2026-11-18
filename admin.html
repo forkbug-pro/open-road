@@ -65,8 +65,7 @@
   </div>
 </div>
 <script>
-let SERVER = ''; try { SERVER = localStorage.getItem('or_srv') || ''; } catch (e) { }
-if (!SERVER) { SERVER = (prompt('Paste your Worker URL (shown once, then remembered on this device):') || '').trim().replace(/\/+$/, ''); try { localStorage.setItem('or_srv', SERVER); } catch (e) { } }
+const SERVER = 'https://open-road-saves.spoonslug.workers.dev';
 const $ = id => document.getElementById(id);
 let master = '';
 async function api(path, body) {
