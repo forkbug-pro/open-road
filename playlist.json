@@ -6,7 +6,7 @@
    "file": "charlie.mp3"
   },
   {
-   "title": "Bloody Stream (Instrumental)",
+   "title": "Bloody Stream",
    "artist": "",
    "file": "bloodystream.mp3"
   },
@@ -16,8 +16,8 @@
    "file": "spongebob.mp3"
   },
   {
-   "title": "Hello Neighbor (Get Out)",
-   "artist": "DAGames",
+   "title": "Get Out",
+   "artist": "",
    "file": "helloneighbor.mp3"
   },
   {
@@ -31,17 +31,17 @@
    "file": "dialtone.mp3"
   },
   {
-   "title": "It's me, It's Verity",
-   "artist": "Horror Skunx",
+   "title": "Verity",
+   "artist": "",
    "file": "verity.mp3"
   },
   {
-   "title": "He Took a Bite of a Boneless Wing",
+   "title": "He Took a Bite of a Boneless Wing Tuff Beat",
    "artist": "",
    "file": "boneless.mp3"
   },
   {
-   "title": "You Got Them Sissy Boy Hands",
+   "title": "I work 72 hours a dang day",
    "artist": "",
    "file": "sissy.mp3"
   },
@@ -57,17 +57,17 @@
   },
   {
    "title": "Thick Of It",
-   "artist": "KSI ft. Trippie Redd",
+   "artist": "",
    "file": "thickofit.mp3"
   },
   {
    "title": "Diamond Is Unbreakable",
-   "artist": "JoJo Main Theme",
+   "artist": "",
    "file": "diamond.mp3"
   },
   {
-   "title": "Awaken (Pillar Men Theme)",
-   "artist": "JoJo OST",
+   "title": "Awaken",
+   "artist": "",
    "file": "awaken.mp3"
   }
  ]
